@@ -83,7 +83,8 @@ python lang_detect.py
 
 **執行指令：**
 ```bash
-python AICUP/datasets/createManifest.py
+cd AICUP/datasets
+python createManifest.py
 ```
 
 ### 步驟 2: 英文 ASR 訓練
@@ -115,7 +116,8 @@ parser.add_argument('--model', type=str, default=r'C:\Users\C110151154\PycharmPr
 
 #### 3.2 執行預測
 ```bash
-python AICUP/ASR/parakeet_asr_predictor.py
+cd AICUP/ASR
+python parakeet_asr_predictor.py
 ```
 
 ### 步驟 4: 中文 ASR 預測
