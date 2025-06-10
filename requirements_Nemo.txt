@@ -1,0 +1,3 @@
+pip install -U nemo_toolkit["asr"]
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install seqeval datasets pytorch-crf
