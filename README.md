@@ -8,7 +8,7 @@
 
 ## 🔧 環境設定
 
-本專案需分別建立兩個 Python 環境，因 Nemo 與 Whisper 相關套件互斥，請分開安裝：
+本專案需分別建立兩個 Python3.10 環境，因 Nemo 與 Whisper 相關套件互斥，請分開安裝：
 
 ### 環境 1: Nemo 環境
 ```bash
