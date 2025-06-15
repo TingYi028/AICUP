@@ -22,11 +22,86 @@ pip install seqeval datasets pytorch-crf
 pip install -r requirements_Whisper.txt
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
-
 > ⚠️ **重要提醒**  
 > 除非執行 Whisper 相關功能，否則所有操作皆於 Nemo 環境進行，僅在需要使用 Whisper 時才需切換至 Whisper 環境。
 
----
+### 安裝ffmpeg(要弄環境變數)
+
+### 創建資料夾及擺放必須文件
+
+```
+└── AICUP/
+    ├── ASR/                                # 自動語音辨識 (Automatic Speech Recognition)
+    │   ├── fintuned_model/
+    │   │   └── Speech_To_Text_Finetuning.nemo    # parakeet-tdt-0.6b-v2.nemo 微調後模型（需要手動放置）
+    │   ├── nemo_experiments/                 # nemo 微調預設存放位置
+    │   ├── test_result/                      # 預測結果
+    │   │   ├── task1_answer_en.txt             # task1 的答案 (英文)（需要手動放置，因為ASR存在一定隨機性，不放置會跑不出我們的結果）
+    │   │   └── task1_answer_en.json            # task1 的答案 (英文時間戳)（需要手動放置，因為ASR存在一定隨機性，不放置會跑不出我們的結果）
+    │   ├── train_config/
+    │   │   └── speech_to_text_finetune.yaml    # 微調參數設定檔
+    │   ├── lang_detect.py                    # 中英文分割程式
+    │   ├── parakeet_asr_predictor.py         # 英文 ASR 預測
+    │   ├── speech_to_text_finetune.py        # 英文 ASR 訓練
+    │   └── parakeet-tdt-0.6b-v2.nemo         # 預訓練權重（需要手動放置）
+    │
+    ├── ChineseASR/
+    │   ├── test_result/                      # 預測結果
+    │   │   ├── task1_answer_zh.txt             # task1 的答案 (中文)（需要手動放置，因為ASR存在一定隨機性，不放置會跑不出我們的結果）
+    │   │   └── task1_answer_zh.json            # task1 的答案 (中文時間戳)（需要手動放置，因為ASR存在一定隨機性，不放置會跑不出我們的結果）
+    │   └── predict.py                        # 中文 ASR 預測
+    │
+    ├── datasets/
+    │   ├── train80/
+    │   │   ├── audio/                        # train1+train2 (英文，不含編號 80000 開始的) 的所有音檔（需要手動放置）
+    │   │   ├── audio_16k/                    # 執行 createManifest.py 後的 16k 音檔（可手動放置或自己產生）
+    │   │   ├── audio_NoBGM/                  # audio 內的音檔經過去人聲處理（可手動放置或自己產生）
+    │   │   ├── task1_answer.txt              # train1+train2 (英文，不含編號 80000 開始的) 的轉錄檔合成（需要手動放置）
+    │   │   ├── task2_answer.txt              # train1+train2 (英文，不含編號 80000 開始的) 的 task2 label（需要手動放置）
+    │   │   └── train_manifest.json           # 執行 createManifest.py 後的 json檔
+    │   ├── val20/
+    │   │   ├── audio/                        # val 的所有音檔（需要手動放置）
+    │   │   ├── audio_16k/                    # 執行 createManifest.py 後的 16k 音檔（可手動放置或自己產生）
+    │   │   ├── audio_NoBGM/                  # audio 內的音檔經過去人聲處理（可手動放置或自己產生）
+    │   │   ├── task1_answer.txt              # 官方val文件（需要手動放置）
+    │   │   ├── task2_answer.txt              # 官方val文件（需要手動放置）
+    │   │   └── val_manifest.json             # 執行 createManifest.py 後的 json檔
+    │   ├── test/
+    │   │   ├── audio/                        # test 的所有音檔（需要手動放置）
+    │   │   ├── audio_NoBGM/                  # audio 內的音檔經過去人聲處理（需要手動放置）（可手動放置或自己產生）
+    │   │   ├── en/                           # 使用 lang_detect.py 創建 (沒有去背景音)（可手動放置或自己產生）
+    │   │   └── zh/                           # 使用 lang_detect.py 創建 (有去背景音)（可手動放置或自己產生）
+    │   ├── convert_audio.py                  # 轉換音訊至16k
+    │   ├── createManifest.py                 # 創建英文微調資料
+    │   └── rename_script.py                  # nobgm 改名
+    │
+    └── NER/                                  # 命名實體識別 (Named Entity Recognition)
+        ├── Chinese/
+        │   ├── datasets/                     # 所需所有資料 (中文 NER)
+        │   │   ├── createBIO.py                # 創建NER需要的訓練資料
+        │   │   ├── chinese_bio.json            # 訓練資料（可手動放置或自己產生）
+        │   │   ├── 中文增強task1.txt           # 手動生成的資料 task1
+        │   │   └── 中文增強task2.txt           # 手動生成的資料 task2
+        │   ├── test_result/                  # 預測結果
+        │   │   └── task2_answer_zh.txt         # task2 的答案 (中文)
+        │   ├── results_ner_microsoft/        # mdeberta-v3-base-crf 微調後模型（需要手動放置）
+        │   ├── train.py                      # 訓練 mdeberta-v3-base-crf
+        │   └── predict.py                    # 中文 NER 預測
+        └── Task2/                            # 英文 NER (通常 Task2 指的是英文相關任務)
+            ├── datasets/                     # 所需所有資料 (英文 NER)
+            │   ├── createBIO.py                # 創建NER需要的訓練資料
+            │   ├── train_bio.json              # 訓練資料（可手動放置或自己產生）
+            │   ├── val_bio.json                # 驗證資料（可手動放置或自己產生）
+            │   ├── prompt.txt                  # 生成資料使用的Prompt
+            │   └── augmented_300.txt           # 生成的資料
+            ├── test_result/                  # 預測結果
+            │   └── task2_answer_en.txt         # task2 的答案 (英文)
+            ├── results_ner_microsoft/        # mdeberta-v3-base-crf 微調後模型 （需要手動放置）
+            ├── train.py                      # 訓練 deberta-v3-large-crf
+            ├── predict.py                    # 英文 NER 預測
+            ├── stacking_predict.py           # stacking(未使用)
+            └── stacking_trainer.py           # stacking(未使用)
+```
 
 ## 🎵 ASR 自動語音識別
 
@@ -53,6 +128,12 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 **重新命名檔案：**  
 將軟體產生的檔案名稱從 `{id}_{origName}_(Vocals)` 轉換回 `{origName}`
+**執行指令：**
+
+```bash
+cd AICUP/datasets
+python rename_script.py
+```
 
 #### 1.2 分離中文與英文音檔
 
@@ -109,9 +190,9 @@ python speech_to_text_finetune.py
 parser.add_argument('--audio_dir', default="../datasets/Test/audio_16k", type=str, help='音頻文件目錄路徑')
 parser.add_argument('--output', type=str, help='詳細輸出文件路徑')
 parser.add_argument('--labels', default="../datasets/val/task1_answer.txt", type=str, help='標籤文件路徑（用於計算MER）若沒有可以不填')
-parser.add_argument('--output_label', type=str, default='Test_result/task1_answer_noFinetuned.txt', help='輸出標籤文件路徑（預設為output_label.txt）')
-parser.add_argument('--json_output', default="Test_result/task1_answer_noFinetuned_timeStamp.json", type=str, help='JSON時間戳輸出文件路徑')
-parser.add_argument('--model', type=str, default=r'C:\Users\C110151154\PycharmProjects\NeMo\AICUP\ASR\fintuned_model\Speech_To_Text_Finetuning_train80_val20.nemo', help='模型名稱，若要使用不微調版本使用 AICUP/ASR/parakeet-tdt-0.6b-v2.nemo')
+parser.add_argument('--output_label', type=str, default='test_result/task1_answer_en.txt', help='輸出標籤文件路徑（預設為output_label.txt）')
+parser.add_argument('--json_output', default="test_result/task1_answer_en.json", type=str, help='JSON時間戳輸出文件路徑')
+parser.add_argument('--model', type=str, default=r'./fintuned_model/Speech_To_Text_Finetuning.nemo', help='模型名稱，若要使用不微調版本使用 AICUP/ASR/parakeet-tdt-0.6b-v2.nemo')
 ```
 
 #### 3.2 執行預測
@@ -154,8 +235,8 @@ cd AICUP/NER/Task2/datasets
 修改 `createBIO.py`，設定以下參數：
 ```python
 bio_json = convert_to_bio_json(
-    r'C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\val\task1_answer.txt',
-    r'C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\val\task2_answer.txt',
+    r'../../datasets/val/task1_answer.txt',
+    r'../../datasets/val/task2_answer.txt',
     './val_bio_raw.json'
 )
 training_data = convert_to_training_format(
@@ -205,8 +286,8 @@ cd AICUP/NER/Chinese/datasets
 修改 `createBIO.py`，設定參數：
 ```python
 bio_json = convert_to_bio_json(
-    r'C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\val\task1_answer.txt',
-    r'C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\val\task2_answer.txt',
+    r'../../datasets/val/task1_answer.txt',
+    r'../../datasets/val/task2_answer.txt',
     './val_bio_raw.json'
 )
 training_data = convert_to_training_format(

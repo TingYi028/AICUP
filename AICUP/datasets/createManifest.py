@@ -241,7 +241,7 @@ if __name__ == '__main__':
     NORMALIZE_TEXT = True  # 設為 True 來啟用文本正規化功能
 
     # 使用絕對路徑
-    TRAIN_AUDIO_DIR = os.path.abspath("./Test/audio_NoBGM")
+    TRAIN_AUDIO_DIR = os.path.abspath("./train80/audio_NoBGM")
     TRAIN_TRANSCRIPT_ORIGINAL = os.path.abspath("./train80/task1_answer.txt")
     TRAIN_MANIFEST_OUTPUT = os.path.abspath("./train80/train_manifest.json")
     TRAIN_CONVERTED_AUDIO_DIR = os.path.abspath("./train80/audio_16k")
@@ -250,11 +250,6 @@ if __name__ == '__main__':
     VAL_TRANSCRIPT_ORIGINAL = os.path.abspath("./val20/task1_answer.txt")
     VAL_MANIFEST_OUTPUT = os.path.abspath("./val20/val_manifest.json")
     VAL_CONVERTED_AUDIO_DIR = os.path.abspath("./val20/audio_16k")
-
-    CH_AUDIO_DIR = os.path.abspath("./chinese/audio_noBGM")
-    CH_TRANSCRIPT_ORIGINAL = os.path.abspath("./chinese/task1_answer.txt")
-    CH_MANIFEST_OUTPUT = os.path.abspath("./chinese/manifest.json")
-    CH_CONVERTED_AUDIO_DIR = os.path.abspath("chinese/audio_16k")
 
     # print("--- 開始產生訓練資料集的清單檔案 ---")
     create_manifest_with_conversion(
@@ -273,16 +268,6 @@ if __name__ == '__main__':
         VAL_MANIFEST_OUTPUT,
         convert_audio=CONVERT_AUDIO,
         converted_audio_dir=VAL_CONVERTED_AUDIO_DIR,
-        normalize_text=NORMALIZE_TEXT
-    )
-
-    # print("\n--- 開始產生中文資料集的清單檔案 ---")
-    create_manifest_with_conversion(
-        CH_AUDIO_DIR,
-        CH_TRANSCRIPT_ORIGINAL,
-        CH_MANIFEST_OUTPUT,
-        convert_audio=CONVERT_AUDIO,
-        converted_audio_dir=CH_CONVERTED_AUDIO_DIR,
         normalize_text=NORMALIZE_TEXT
     )
 

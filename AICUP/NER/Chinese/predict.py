@@ -81,10 +81,10 @@ class TokenClassificationWithCRF(PreTrainedModel):
 
 
 # --- 配置 ---
-MODEL_PATH = r"C:\Users\C110151154\PycharmProjects\AICUP\AICUP\NER\Chinese\results_ner_microsoft\mdeberta-v3-base-crf\checkpoint-595"
+MODEL_PATH = r"./results_ner_microsoft/mdeberta-v3-base-crf/checkpoint-595"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-INPUT_JSON_PATH = r"C:\Users\C110151154\PycharmProjects\AICUP\AICUP\ChineseASR\TestChineseResult\task1_answer_chinese.json"
-OUTPUT_TXT_PATH = r"predict_result/task2_answer_chinese.txt"
+INPUT_JSON_PATH = r"../ChineseASR/test_result/task1_answer_zh.json"
+OUTPUT_TXT_PATH = r"./test_result/task2_answer_zh.txt"
 normalizer = BasicTextNormalizer()
 
 # --- 載入模型和 Tokenizer (調整過的區塊) ---

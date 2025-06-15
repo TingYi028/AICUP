@@ -125,7 +125,7 @@ BASE_MODEL = "microsoft/deberta-v3-large"
 MODEL_CHECKPOINT = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\NER\Task2\results_ner_microsoft\deberta-v3-large-stacking\checkpoint-2016"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 INPUT_JSON_PATH = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\ASR\Test_result\task1_answer_Mix_timeStamp.json"
-OUTPUT_TXT_PATH = r"Test_result/task2_answer_Mix.txt"
+OUTPUT_TXT_PATH = r"test_result/task2_answer_Mix.txt"
 normalizer = EnglishTextNormalizer({})
 
 # --- 載入模型和 Tokenizer (調整過的區塊) ---

@@ -8,9 +8,9 @@ import librosa
 
 # 參數設定
 MODEL_NAME = "openai/whisper-large-v3"
-AUDIO_DIR = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\HybridTest\audio_16k"
-CHINESE_DIR = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\ASR\Split_wav\zh"
-ENGLISH_DIR = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\ASR\Split_wav\en"
+AUDIO_DIR = r"../datasets/test/audio"
+CHINESE_DIR = r"../datasets/test/zh"
+ENGLISH_DIR = r"../datasets/test/en"
 AUDIO_EXT = ".wav"
 
 os.makedirs(CHINESE_DIR, exist_ok=True)
@@ -53,8 +53,7 @@ for fname in tqdm(os.listdir(AUDIO_DIR)):
     wav_path = os.path.join(AUDIO_DIR, fname)
     try:
         # 只偵測語言，不需完整轉錄
-        # 先取前10秒片段以加速語言偵測
-        transcribe_10 = asr_pipe(wav_path, generate_kwargs={"task": "transcribe", "return_timestamps": False, "max_new_tokens": 10})['text']
+        transcribe_10 = asr_pipe(wav_path, generate_kwargs={"task": "transcribe", "return_timestamps": False, "max_new_tokens": 50})['text']
         ratio = chinese_ratio(transcribe_10)
         # 分類存放
         if ratio > 0.5:

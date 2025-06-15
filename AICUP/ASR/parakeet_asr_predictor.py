@@ -9,6 +9,7 @@ from transformers.models.whisper.english_normalizer import BasicTextNormalizer, 
 from tqdm import tqdm
 import re
 import json
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
@@ -48,11 +49,11 @@ class ParakeetASRPredictor:
         Args:
             model_name: 模型名稱，預設為 nvidia/parakeet-tdt-0.6b-v2
         """
-        model_name = "nvidia/parakeet-tdt-0.6b-v2"
+        # model_name = "nvidia/parakeet-tdt-0.6b-v2"
         print(f"🚀 正在載入模型: {model_name}")
         print("⏳ 模型載入中，請稍候...")
-        self.asr_model = nemo_asr.models.ASRModel.from_pretrained(model_name)
-        # self.asr_model = nemo_asr.models.ASRModel.restore_from(model_name)
+        self.asr_model_o = nemo_asr.models.ASRModel.from_pretrained("nvidia/parakeet-tdt-0.6b-v2")
+        self.asr_model = nemo_asr.models.ASRModel.restore_from(model_name)
 
         print("✅ 模型載入完成！")
 
@@ -188,7 +189,11 @@ class ParakeetASRPredictor:
         # 批量轉錄
         print("🎤 開始批量轉錄...")
         print("⏳ 正在進行語音識別，請稍候...")
-        outputs = self.asr_model.transcribe(processed_files, timestamps=True, batch_size=4)
+        # decode_cfg = self.asr_model.cfg.decoding
+        # decode_cfg.beam.beam_size = 3
+        # self.asr_model.change_decoding_strategy(decode_cfg)
+        outputs = self.asr_model.transcribe(processed_files, timestamps=True, batch_size=8)
+        outputs_o = self.asr_model_o.transcribe(processed_files, timestamps=True, batch_size=8)
         print("✅ 轉錄完成！")
 
         # 整理結果
@@ -201,18 +206,28 @@ class ParakeetASRPredictor:
         # 初始化英文文本正規化器
         normalizer = EnglishTextNormalizer({})
 
-        for i, output in enumerate(tqdm(outputs, desc="整理結果", unit="個")):
+        for i, (output, output_o) in enumerate(tqdm(zip(outputs, outputs_o), desc="整理結果", unit="個")):
             # 使用 Whisper 的英文正規化器處理文本
             converted_text = normalizer(output.text)
-
-            result = {
-                'file': successful_audio_files[i],
-                'transcription': converted_text,
-                'original_transcription': output.text,  # 保留原始轉錄結果
-                'word_timestamps': output.timestamp.get('word', []),
-                'segment_timestamps': output.timestamp.get('segment', []),
-                'char_timestamps': output.timestamp.get('char', [])
-            }
+            if converted_text == '':  # 應對有可能生出空白
+                converted_text = normalizer(output_o.text)
+                result = {
+                    'file': successful_audio_files[i],
+                    'transcription': converted_text,
+                    'original_transcription': output_o.text,  # 保留原始轉錄結果
+                    'word_timestamps': output_o.timestamp.get('word', []),
+                    'segment_timestamps': output_o.timestamp.get('segment', []),
+                    'char_timestamps': output_o.timestamp.get('char', [])
+                }
+            else:
+                result = {
+                    'file': successful_audio_files[i],
+                    'transcription': converted_text,
+                    'original_transcription': output.text,  # 保留原始轉錄結果
+                    'word_timestamps': output.timestamp.get('word', []),
+                    'segment_timestamps': output.timestamp.get('segment', []),
+                    'char_timestamps': output.timestamp.get('char', [])
+                }
             final_results.append(result)
 
         # **新增：輸出 task1_answer_Finetuned.txt 文件**
@@ -350,13 +365,17 @@ class ParakeetASRPredictor:
 
 def main():
     parser = argparse.ArgumentParser(description='NVIDIA Parakeet TDT 0.6B V2 批量語音識別')
-    parser.add_argument('--audio_dir',default="../datasets/Test/audio_NoBGM_16k", type=str, help='音頻文件目錄路徑')
+    parser.add_argument('--audio_dir', default="../datasets/test/en", type=str, help='音頻文件目錄路徑')  # 沒有去背景音的
     parser.add_argument('--output', type=str, help='詳細輸出文件路徑')
-    parser.add_argument('--labels',default="../datasets/val/task1_answer.txt", type=str, help='標籤文件路徑（用於計算MER）')
-    parser.add_argument('--output_label', type=str, default='Test_result/task1_answer_noFinetuned.txt',
+    parser.add_argument('--labels', default=None, type=str,
+                        help='標籤文件路徑（用於計算MER）')
+    parser.add_argument('--output_label', type=str, default="./test_result/task1_answer_en.txt",
                         help='輸出標籤文件路徑（預設為output_label.txt）')
-    parser.add_argument('--json_output',default="Test_result/task1_answer_noFinetuned_timeStamp.json", type=str, help='JSON時間戳輸出文件路徑')
-    parser.add_argument('--model', type=str, default=r'C:\Users\C110151154\PycharmProjects\AICUP\AICUP\ASR\fintuned_model\Speech_To_Text_Finetuning.nemo', help='模型名稱')
+    parser.add_argument('--json_output', default="./test_result/task1_answer_en.json", type=str,
+                        help='JSON時間戳輸出文件路徑')
+    parser.add_argument('--model', type=str,
+                        default=r'./fintuned_model/Speech_To_Text_Finetuning.nemo',
+                        help='模型名稱')
 
     args = parser.parse_args()
     # 初始化預測器

@@ -16,11 +16,11 @@ normalizer = BasicTextNormalizer()
 # !!! 重要：請修改為您微調模型的實際路徑 (通常是訓練腳本中的 OUTPUT_DIR) !!!
 MODEL_NAME = "openai/whisper-large-v3-turbo"  # 處理器可以從基礎模型載入，確保兼容性
 
-VAL_AUDIO_DATA_DIR = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\TestChinese\audio_NoBGM_16k"
-VAL_LABEL_FILE_PATH = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\TestChinese\task1_answer.txt"
-# VAL_LABEL_FILE_PATH = None
-OUTPUT_FILE_PATH = "TestChineseResult/task1_answer_chinese.txt"  # 原始純文本輸出
-OUTPUT_JSON_FILE_PATH = "TestChineseResult/task1_answer_chinese.json"  # 新增的 JSON 輸出檔案
+VAL_AUDIO_DATA_DIR = r"../datasets/test/zh"
+# VAL_LABEL_FILE_PATH = r"C:\Users\C110151154\PycharmProjects\NeMo\AICUP\datasets\TestChinese\task1_answer.txt"
+VAL_LABEL_FILE_PATH = None
+OUTPUT_FILE_PATH = "test_result/task1_answer_zh.txt"  # 原始純文本輸出
+OUTPUT_JSON_FILE_PATH = "test_result/task1_answer_zh.json"  # 新增的 JSON 輸出檔案
 AUDIO_EXTENSION = ".wav"
 
 GENERATION_MAX_LENGTH = 250  # 建議與訓練時的設定保持一致或按需調整
