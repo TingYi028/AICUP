@@ -28,7 +28,7 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 ### 安裝ffmpeg(要弄環境變數)
 
 ### 創建資料夾及擺放必須文件
-下載連結: https://drive.google.com/file/d/1B-EBF57mc3m0jtGaiHv17NFXt_HDJWev/view?usp=sharing
+下載連結: 請見隨附txt檔
 ```
 └── AICUP/
     ├── ASR/                                # 自動語音辨識 (Automatic Speech Recognition)
